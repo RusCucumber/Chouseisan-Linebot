@@ -47,7 +47,7 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    if event.message.text == "hoge":
+    if event.message.text == "hoge\nhoge":
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="test"))
