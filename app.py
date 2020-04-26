@@ -11,25 +11,29 @@ from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
 )
 
+# __name__をFlaskのアプリとして利用
 app = Flask(__name__)
 
-#環境変数取得
+# 環境変数取得
 YOUR_CHANNEL_ACCESS_TOKEN = os.environ["YOUR_CHANNEL_ACCESS_TOKEN"]
 YOUR_CHANNEL_SECRET = os.environ["YOUR_CHANNEL_SECRET"]
 
+# linebot api と紐付け？
 line_bot_api = LineBotApi(YOUR_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(YOUR_CHANNEL_SECRET)
 
+# https://<app_path>/ にアクセスした場合
 @app.route("/")
 def hello_world():
-    return "hello world!"
+    return "hello world!" # hello world を表示
 
+# https://<app_path>/callback に、POST でリクエストした場合
 @app.route("/callback", methods=['POST'])
 def callback():
-    # get X-Line-Signature header value
+    # httpヘッダーの X-Line-Signature を取得
     signature = request.headers['X-Line-Signature']
 
-    # get request body as text
+    # httpのリクエストのボディをテキストとして取得
     body = request.get_data(as_text=True)
     app.logger.info("Request body: " + body)
 
@@ -45,7 +49,8 @@ def callback():
 def handle_message(event):
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=event.message.text))
+        TextSendMessage(text="test"))
+        ## TextSendMessage(text=event.message.text))
 
 if __name__ == "__main__":
 #    app.run()
