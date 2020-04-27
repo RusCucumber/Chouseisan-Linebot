@@ -114,13 +114,14 @@ def handle_message(event):
             month/day
         for example:
             12/1"""
-    
-    chouseisan = get_chouseisan(date)
-    if (chouseisan == "-1"):
-        response = """Error
-        Failed to get URL of chousei-san."""
     else:
-        response = chouseisan
+        chouseisan = get_chouseisan(date)
+
+        if (chouseisan == "-1"):
+            response = """Error
+            Failed to get URL of chousei-san."""
+        else:
+            response = chouseisan
 
     line_bot_api.reply_message(
         event.reply_token,
