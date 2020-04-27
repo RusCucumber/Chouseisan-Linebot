@@ -45,12 +45,16 @@ def callback():
 
     return 'OK'
 
+num = 0
+
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    if event.message.text == "hoge\nhoge":
+    if event.message.text == "hoge":
+        num += 1
+    elif event.message.text == "piyo":
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="test"))
+            TextSendMessage(text=str(num)))
     else:
         line_bot_api.reply_message(
             event.reply_token,
