@@ -49,7 +49,7 @@ def callback():
 def handle_message(event):
     if event.message.text == "1":
         line_bot_api.reply_message(
-            reply_token,
+            event.reply_token,
             TextSendMessage(text=str(1+10))
         )
     elif event.message.text == "piyo":
