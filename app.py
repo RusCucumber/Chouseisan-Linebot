@@ -11,6 +11,8 @@ from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
 )
 
+import re
+
 # __name__をFlaskのアプリとして利用
 app = Flask(__name__)
 
@@ -47,15 +49,13 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    if event.message.text == "1":
+    pattern = '(\d\d?/\d\d?\n)+?\n?'
+    result = re.match(pattern, event.message.text)
+
+    if (result):
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text=str(1+10))
-        )
-    elif event.message.text == "piyo":
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="piyopiyo")
+            TextSendMessage(text=event.message.text)
         )
     else:
         line_bot_api.reply_message(
