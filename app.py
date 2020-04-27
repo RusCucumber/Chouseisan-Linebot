@@ -56,12 +56,18 @@ def check_message(message):
     schedule = ""
     pattern_date = '^\d\d?/\d\d?$'
 
+    year = int(datetime.date.today().year)
+    weeks = ['(Mon)', '(Tue)', '(Wed)', '(Thu)', '(Fri)', '(Sat)', '(Sun)']
+
     for date in message.splitlines():
         result = re.match(pattern_date, date)
         if result:
             try:
                 date_formatted = datetime.datetime.strptime(date, "%m/%d")
-                schedule += (date + "\n")
+                month = int(date_formatted.month)
+                day = int(date_formatted.day)
+                i = datetime.datetime(year, month, day).weekday()
+                schedule += (date + weeks[i] + '\n')
             except:
                 return "-1"
         else:
@@ -109,17 +115,13 @@ def handle_message(event):
     ## メッセージが仕様通りかチェック
     date = check_message(event.message.text)
     if (date == "-1"):
-        response = """Error
-        argument should be like this:
-            month/day
-        for example:
-            12/1"""
+        response = "ERROR\nargument should be like this:\n   month/day\nfor example:\n   12/1"
     else:
+        ## メッセージから取得した日付で調整さんのリンクを生成
         chouseisan = get_chouseisan(date)
 
         if (chouseisan == "-1"):
-            response = """Error
-            Failed to get URL of chousei-san."""
+            response = "ERROR\nFailed to get URL of chousei-san."
         else:
             response = chouseisan
 
