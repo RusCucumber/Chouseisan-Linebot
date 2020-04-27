@@ -12,6 +12,7 @@ from linebot.models import (
 )
 
 import re
+import datetime
 
 # __name__をFlaskのアプリとして利用
 app = Flask(__name__)
@@ -47,12 +48,29 @@ def callback():
 
     return 'OK'
 
-def test(x):
-    return x + 'a'
+def check_message(message):
+
+    schedule = ""
+    pattern_date = '^\d\d?/\d\d?$'
+
+    for date in message.splitlines():
+        result = re.match(pattern_date, date)
+        if result:
+            try:
+                date_formatted = datetime.datetime.strptime(date, "%m/%d")
+                schedule += (date + '\n')
+            except:
+                return "Error"
+
+        else:
+            return "Error"
+
+    return schedule
+
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    hoge = test(event.message.text)
+    hoge = check_message(event.message.text)
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=hoge))
