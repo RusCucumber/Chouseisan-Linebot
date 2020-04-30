@@ -53,28 +53,85 @@ def callback():
     return 'OK'
 
 def check_message(message):
+    title = ""
     schedule = ""
+    pattern_time = '^\d\d?:\d\d?-\d\d?:\d\d?$'
     pattern_date = '^\d\d?/\d\d?$'
+    pattern_date_time = '(^\d\d?/\d\d?)\s*\((.*?)\)$'
+
+    flag_title = 1
+    flag_time = 1
+
+    times = []
 
     year = int(datetime.date.today().year)
     weeks = ['(Mon)', '(Tue)', '(Wed)', '(Thu)', '(Fri)', '(Sat)', '(Sun)']
 
-    for date in message.splitlines():
-        result = re.match(pattern_date, date)
-        if result:
+    for token in message.splitlines():
+        if flag_title:
+            flag_title = 0
+            result_time = re.match(pattern_time, token)
+            result_date = re.match(pattern_date, token)
+
+            if not(result_date) and not(result_time):
+                title = token
+                continue
+            else:
+                title = 'Schedule'
+                continue
+
+        if flag_time:
+            result_time = re.match(pattern_time, token)
+
+            if result_time:
+                try:
+                    for time in token.split('-'):
+                        datetime.datetime.strptime(time, "%H:%M")
+                    times.append(token)
+                    continue
+                except:
+                    return "-1"
+            else:
+                result_date = re.match(pattern_date, token)
+                if result_date:
+                    flag_time = 0
+                    if len(times) == 0:
+                        times.append("")
+                else:
+                    return "-1"
+
+        result_date = re.match(pattern_date, token)
+        if result_date:
             try:
-                date_formatted = datetime.datetime.strptime(date, "%m/%d")
+                date_formatted = datetime.datetime.strptime(token, "%m/%d")
                 month = int(date_formatted.month)
                 day = int(date_formatted.day)
                 i = datetime.datetime(year, month, day).weekday()
-                schedule += (date + weeks[i] + '\n')
+
+                for scheduled_time in times:
+                    schedule += (token + weeks[i] + scheduled_time + '\n')
             except:
                 return "-1"
         else:
-            return "-1"
-    return schedule
+            result_date_time = re.match(pattern_date_time, token)
+            if result_date_time:
+                try:
+                    date_formatted = datetime.datetime.strptime(result_date_time.group(1), "%m/%d")
+                    month = int(date_formatted.month)
+                    day = int(date_formatted.day)
+                    i = datetime.datetime(year, month, day).weekday()
 
-def get_chouseisan(date):
+                    for j in result_date_time.group(2).split(','):
+                        j = int(j)
+                        schedule += (result_date_time.group(1) + weeks[i] + times[j] + '\n')
+                except:
+                    return "-1"
+            else:
+                return "-1"
+
+    return title, schedule
+
+def get_chouseisan(title, data):
     try:
         top_page = requests.get('https://chouseisan.com/schedule/newEvent/create')
         soup_top_page = BeautifulSoup(top_page.text, 'html.parser')
@@ -85,11 +142,11 @@ def get_chouseisan(date):
     time.sleep(3)
 
     session = requests.session()
-    response = session.get('https://chouseisan.com/schedule/newEvent/create')
+    response = session.get('https://chouseisan.com/schedule/newEvent/create')    
 
     event = {
-        'name': 'schedule',
-        'kouho': date,
+        'name': title,
+        'kouho': data,
         'chousei_token': chousei_token
     }
 
@@ -115,7 +172,7 @@ def handle_message(event):
     ## メッセージが仕様通りかチェック
     date = check_message(event.message.text)
     if (date == "-1"):
-        response = "ERROR\nargument should be like this:\n   month/day\nfor example:\n   12/1"
+        response = "ERROR\nMessage should be like this:\n   month/day\nfor example:\n   12/1"
     else:
         ## メッセージから取得した日付で調整さんのリンクを生成
         chouseisan = get_chouseisan(date)
