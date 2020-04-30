@@ -170,12 +170,12 @@ def handle_message(event):
     response = ""
 
     ## メッセージが仕様通りかチェック
-    date = check_message(event.message.text)
-    if (date == "-1"):
+    data = check_message(event.message.text)
+    if (data == "-1"):
         response = "ERROR\nMessage should be like this:\n   month/day\nfor example:\n   12/1"
     else:
         ## メッセージから取得した日付で調整さんのリンクを生成
-        chouseisan = get_chouseisan(date)
+        chouseisan = get_chouseisan(data[0], data[1])
 
         if (chouseisan == "-1"):
             response = "ERROR\nFailed to get URL of chousei-san."
