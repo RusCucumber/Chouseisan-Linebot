@@ -78,7 +78,6 @@ def check_message(message):
                 continue
             else:
                 title = 'Schedule'
-                continue
 
         if flag_time:
             result_time = re.match(pattern_time, token)
